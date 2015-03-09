@@ -6,7 +6,7 @@
 (defun my-reverse (list)
   (labels ((rev (list acc)
              (if list
-                 (progn (push (car list) acc) (rev (cdr list) acc))
+                 (rev (cdr list) (cons (car list) acc))
                  acc)))
     (rev list nil)))
 
