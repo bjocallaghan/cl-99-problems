@@ -1,12 +1,13 @@
 (use-package :rt)
 
-(deftest example-1
-    (paldindromep '(x a m a x)) t)
+(deftest example
+    (my-reverse '(a b c d)) (d c b a))
 
-(deftest example-2
-    (paldindromep '(1 2 3 4 5)) nil)
-
-(defun paldindromep (list)
-  (equal (reverse list) list))
+(defun my-reverse (list)
+  (labels ((rev (list acc)
+             (if list
+                 (progn (push (car list) acc) (rev (cdr list) acc))
+                 acc)))
+    (rev list nil)))
 
 (do-tests)

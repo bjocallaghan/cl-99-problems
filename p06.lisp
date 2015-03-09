@@ -1,6 +1,12 @@
-(defun palindrome-p (lst)
-  (let ((rev (reverse lst)))
-    (equal lst rev)))
+(use-package :rt)
 
-(palindrome-p '(x a m a x))
-(palindrome-p '(a b c d e))
+(deftest example-1
+    (paldindromep '(x a m a x)) t)
+
+(deftest example-2
+    (paldindromep '(1 2 3 4 5)) nil)
+
+(defun paldindromep (list)
+  (equal (reverse list) list))
+
+(do-tests)
