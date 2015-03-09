@@ -1,24 +1,15 @@
-;;; i think this cons unnecessarily
-(defun my-flatten (lst)
-  (labels ((flat (lst acc)
-             (if (null lst)
-                 (nreverse acc)
-                 (progn
-                   (if (atom (car lst))
-                       (push (car lst) acc)
-                       (dolist (i (flat (car lst) nil))
-                         (push i acc))) ; unnecessary cons?
-                   (flat (cdr lst) acc)))))
-    (flat lst nil)))
+(use-package :rt)
 
-;;; i think this doesn't cons unnecessarily
-(defun my-flatten (lst)
-  (labels ((flat (lst acc)
-             (if (null lst)
-                 acc
-                 (progn
-                   (if (atom (car lst))
-                       (push (car lst) acc)
-                       (setf acc (flat (car lst) acc)))
-                   (flat (cdr lst) acc)))))
-    (nreverse (flat lst nil))))
+(deftest example
+    (my-flatten '(a (b (c d) e))) (A B C D E))
+
+(defun my-flatten (list)
+  (labels ((flat (list acc)
+             (if list
+                 (flat (cdr list) (if (atom (car list))
+                                      (cons (car list) acc)
+                                      (nconc (flat (car list) nil) acc)))
+                 acc)))
+    (nreverse (flat list nil))))
+
+(do-tests)
