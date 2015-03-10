@@ -9,7 +9,8 @@
              (let (x-list)
                (dotimes (i times x-list) (push x x-list))))
            (replicate (list)
-             (when list (nconc (replicate-item (car list)) (replicate (cdr list))))))
+             (when list (nconc (replicate-item (car list))
+                               (replicate (cdr list))))))
     (replicate list)))
 
 (do-tests)
