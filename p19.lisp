@@ -18,9 +18,10 @@
   (let ((copy (copy-seq list)))
     (cond
       ((zerop n) copy)
-      ((plusp n) (nconc (nthcdr n copy) (first-n n copy)))
+      ((plusp n) (append (nthcdr n copy) (first-n n copy)))
       ((minusp n) (progn
                     (setf (cdr (last copy (1+ (abs n)))) nil) ; cons surgery!
-                    (nconc (last list (abs n)) copy))))))
+                    (append (last list (abs n)) copy))))))
 
-(do-tests)
+;; run tests twice--assure non-destructiveness
+(do-tests) (do-tests)
