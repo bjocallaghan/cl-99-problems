@@ -10,7 +10,9 @@
                                     (cddr list)
                                     (cdr list))
                                 (1- position))))))
-    (remove-at list (- position 2))))
+    (if (= position 1)
+        (cdr (copy-seq list)) ; special case
+        (remove-at list (- position 2)))))
 
 ;; run tests twice--assure non-destructiveness
 (do-tests) (do-tests)
