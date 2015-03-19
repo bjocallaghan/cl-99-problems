@@ -1,3 +1,6 @@
+(defparameter *partial-tree* '(x 4 (9 8 x x)))
+(defparameter *blank-tree* '(x x (x x (x x) x)))
+
 (defun von-koch-construction (blank-tree)
   "Given an unenumerated tree of N nodes, returns a tree of N nodes and N-1
 edges, with nodes enumerated 1 to N and edges 1 to N-1, such that each edge's
@@ -9,7 +12,11 @@ enumeration is equal to the difference between the nodes."
 
 (defun num-nodes (tree)
   "Determine the number of nodes in an arbitrary tree."
-  7)
+  (labels ((num-descendents (node)
+             (apply #'+ (cons (length (cdr node))
+                              (mapcar #'num-descendents
+                                      (remove-if #'atom (cdr node)))))))
+    (1+ (num-descendents tree))))
 
 (defun tree->dot (tree)
   (format t "~&graph{~%")
