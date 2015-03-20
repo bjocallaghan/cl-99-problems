@@ -1,6 +1,6 @@
-(defparameter *partial-tree* '(x ((4 ((9 ()) (x ()))) (6 ()) (x ()))))
-(defparameter *simple-tree* '(x ((x ()) (x ()))))
-(defparameter *blank-tree* '(x ((x ((x ()) (x ()))) (x ()) (x ()))))
+(defparameter *partial-tree* '(x ((4 ((9 nil) (x nil))) (6 nil) (x nil))))
+(defparameter *simple-tree* '(x ((x nil) (x nil))))
+(defparameter *blank-tree* '(x ((x ((x nil) (x nil))) (x nil) (x nil))))
 
 (defun von-koch-construction (blank-tree)
   "Given an unenumerated tree of N nodes, returns a tree of N nodes and N-1
@@ -16,6 +16,16 @@ enumeration is equal to the difference between the nodes."
 ;;   (apply #'+ (cons (length (cdr node))
 ;;                    (mapcar #'num-descendents
 ;;                            (remove-if #'atom (cdr node))))))
+
+(defun nested-list-copy (structure)
+  "Creates deep[er] copy of a nested list. End result, no shared cons cells
+between the original structure and the copy."
+  (when structure
+    (if (atom (car structure))
+        (cons (car structure)
+              (nested-list-copy (cdr structure)))
+        (cons (nested-list-copy (car structure))
+              (nested-list-copy (cdr structure))))))
 
 (defun normalize-tree-shape (tree)
   ;; i don't actually think i need to worry about this one just yet
