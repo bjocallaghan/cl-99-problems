@@ -1,5 +1,6 @@
-(defparameter *partial-tree* '(x 4 (9 8 x x)))
-(defparameter *blank-tree* '(x x (x x (x x) x)))
+(defparameter *partial-tree* '(x ((4 ((9 ()) (x ()))) (6 ()) (x ()))))
+(defparameter *simple-tree* '(x ((x ()) (x ()))))
+(defparameter *blank-tree* '(x ((x ((x ()) (x ()))) (x ()) (x ()))))
 
 (defun von-koch-construction (blank-tree)
   "Given an unenumerated tree of N nodes, returns a tree of N nodes and N-1
@@ -10,53 +11,43 @@ enumeration is equal to the difference between the nodes."
           (edges-left (loop for i from 1 to (1- n) collect i)))
     )))
 
-(defun num-nodes (tree)
-  "Determine the number of nodes in an arbitrary tree."
-  (labels ((num-descendents (node)
-             (apply #'+ (cons (length (cdr node))
-                              (mapcar #'num-descendents
-                                      (remove-if #'atom (cdr node)))))))
-    (1+ (num-descendents tree))))
+;; (defun num-descendents (node)
+;;   "Determine the number of descendent nodes of a node (or tree)."
+;;   (apply #'+ (cons (length (cdr node))
+;;                    (mapcar #'num-descendents
+;;                            (remove-if #'atom (cdr node))))))
 
-(defun tree->dot (tree)
-  (format t "~&graph{~%")
-  (let ((anon-counter 0))
-    (labels ((write-subnode (parent children &optional parent-name)
-               (let ((parent-name (if parent-name
-                                      parent-name
-                                      (format nil
-                                              "~a"
-                                              (if (eq parent 'x)
-                                                  (format nil
-                                                          "anon~d" 
-                                                          (incf anon-counter))
-                                                  parent)))))
-                 (format t "~&~a[label=\"~a\"];~%" parent-name parent)
-                 (dolist (child children)
-                   (let ((immediate-child (if (atom child)
-                                              child
-                                              (car child))))
-                     (let ((child-name (if (eq immediate-child 'x)
-                                           (format nil
-                                                   "anon~d"
-                                                   (incf anon-counter))
-                                           immediate-child)))
-                       (if (and (integerp parent) (integerp immediate-child))
-                           (format t "~&~a--~a[label=\"~a\"];~%"
-                                   parent-name child-name (abs (- parent immediate-child)))
-                           (format t "~&~a--~a;~%"
-                                   parent-name child-name))
-                       (if (atom child) 
-                           (format t "~&~a[label=\"~a\"];~%" child-name child)
-                           (write-subnode immediate-child (cdr child) child-name))))))))
-      (write-subnode (car tree) (cdr tree))))
-  (format t "~&}~%"))
+(defun normalize-tree-shape (tree)
+  ;; i don't actually think i need to worry about this one just yet
+  (error "not implemented"))
 
+(defparameter *anon-counter* 0)
 
-;;; check out this usage...
-;; (dot->png "empty.dot" (lambda () (tree->dot '(x x (x x x x)))))
-;; (dot->png "empty.dot" (lambda () (tree->dot '(x 4 (9 8 x x)))))
+(defun get-node-gname (node)
+  (if (eq (car node) 'x)
+      (format nil "anon~d" (incf *anon-counter*))
+      (car node)))
 
+(defun node->dot (node &optional node-name)
+  (let ((node-name (if (null node-name)
+                       (get-node-gname node)
+                       node-name)))
+    (format t "~&~a[label=\"~a\"];~%" node-name (car node))
+    (dolist (child (cadr node))
+      (let ((child-name (get-node-gname child)))
+        (if (and (integerp node-name) (integerp child-name))
+            (format t "~&~a--~a[label=\"~a\"];~%"
+                    node-name child-name (abs (- node-name child-name)))
+            (format t "~&~a--~a;~%"
+                    node-name child-name))
+        (node->dot child child-name)))))
+
+(defun tree->dot (root-node)
+  (let ((*anon-counter* 0))
+    (format t "~&graph{~%")
+    (node->dot root-node)
+    (format t "~&}~%")))
+  
 
 (defun next-von-koch-possibility (tree)
   )
