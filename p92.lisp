@@ -33,18 +33,18 @@ between the original structure and the copy."
 
 (defparameter *anon-counter* 0)
 
-(defun get-node-gname (node)
+(defun get-node-graph-name (node)
   (if (eq (car node) 'x)
       (format nil "anon~d" (incf *anon-counter*))
       (car node)))
 
 (defun node->dot (node &optional node-name)
   (let ((node-name (if (null node-name)
-                       (get-node-gname node)
+                       (get-node-graph-name node)
                        node-name)))
     (format t "~&~a[label=\"~a\"];~%" node-name (car node))
     (dolist (child (cadr node))
-      (let ((child-name (get-node-gname child)))
+      (let ((child-name (get-node-graph-name child)))
         (if (and (integerp node-name) (integerp child-name))
             (format t "~&~a--~a[label=\"~a\"];~%"
                     node-name child-name (abs (- node-name child-name)))
