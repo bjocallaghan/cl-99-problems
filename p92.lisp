@@ -7,10 +7,38 @@
   "Given an unenumerated tree of N nodes, returns a tree of N nodes and N-1
 edges, with nodes enumerated 1 to N and edges 1 to N-1, such that each edge's
 enumeration is equal to the difference between the nodes."
-  (let ((n (num-nodes blank-tree)))
-    (let ((nodes-left (loop for i from 1 to n collect i))
-          (edges-left (loop for i from 1 to (1- n) collect i)))
-    )))
+  (let* ((round 0)
+         (n (num-nodes blank-tree))
+         (states (list (list blank-tree (loop for i from 1 to n collect i)))))
+    (dotimes (i n)
+      (let (new-states)
+        (dolist (state states)
+          (setf new-states (nconc (next-von-koch-states state) new-states)))
+        (format t "~&Round ~d: ~d states became ~d states.~%"
+                (incf round) (length states) (length new-states))
+        (setf states new-states)))
+    (caar states)))
+
+(defun next-von-koch-states (state)
+  (let ((tree (first state))
+        (values-left (second state)))
+    (labels ((assign (value)
+               (let* ((copy (nested-list-copy tree))
+                      (blank-node (find-node copy (lambda (x)
+                                                    (eq (car x) 'x)))))
+                 (setf (car blank-node) value)
+                 copy)))
+      (remove-if-not #'von-koch-state-valid-p
+                     (mapcar #'(lambda (x) (list (assign x)
+                                                 (remove x values-left)))
+                             values-left)))))
+
+(defun von-koch-state-valid-p (von-koch-state)
+  "Returns true if TREE does not have duplicate edge values."
+  ;; stub. this is supposed to cull bad candidates (efficiency) and check final
+  ;; solution (correctness)
+  (let ((tree (first von-koch-state)))
+    t))
 
 (defun num-nodes (root-node)
   "Determine the number of nodes in a tree (or subtree)."
@@ -24,7 +52,7 @@ between the original structure and the copy."
         (cons (car structure)
               (nested-list-copy (cdr structure)))
         (cons (nested-list-copy (car structure))
-              (nested-list-copy (cdr structure)))))
+              (nested-list-copy (cdr structure))))))
 
 (defun find-node (node key-fn)
   "Find the first node in a tree (or subtree) that KEY-FN returns non-nil."
@@ -64,17 +92,3 @@ between the original structure and the copy."
     (format t "~&graph{~%")
     (node->dot root-node)
     (format t "~&}~%")))
-
-(defun von-koch-tree-edges-valid-p (tree)
-  "Returns true if TREE does not have duplicate edge values."
-  ;; stub
-  t)
-
-(defun next-von-koch-possibilities (tree nodes-left)
-  (labels ((assign (value)
-             (let* ((copy (nested-list-copy tree))
-                    (blank-node (find-node copy (lambda (x) (eq (car x) 'x)))))
-               (setf (car blank-node) value)
-               copy)))
-    (remove-if-not #'von-koch-tree-edges-valid-p
-                   (mapcar #'(lambda (x) (assign x)) nodes-left)))))
