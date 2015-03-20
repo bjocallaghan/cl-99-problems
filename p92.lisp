@@ -2,6 +2,8 @@
 (defparameter *simple-tree* '(x ((x nil) (x nil))))
 (defparameter *blank-tree* '(x ((x ((x nil) (x nil))) (x nil) (x nil))))
 (defparameter *filled-tree* '(3 ((1 nil) (2 nil))))
+(defparameter *bigger-tree* '(x ((x ((x ((x ((x ((x nil) (x nil))) (x nil) (x nil))))) (x nil))) (x nil) (x nil))))
+(defparameter *giant-tree* '(x ((x ((x ((x ((x ((x nil) (x nil))) (x nil) (x nil))))) (x nil))) (x ((x ((x ((x nil) (x nil))) (x ((x ((x ((x nil) (x nil))) (x nil) (x nil))))) (x nil))))) (x nil))))
 
 (defun von-koch-construction (blank-tree &optional verbose)
   "Given an unenumerated tree of N nodes, returns a tree of N nodes and N-1
