@@ -3,7 +3,7 @@
 (defparameter *blank-tree* '(x ((x ((x nil) (x nil))) (x nil) (x nil))))
 (defparameter *filled-tree* '(3 ((1 nil) (2 nil))))
 
-(defun von-koch-construction (blank-tree)
+(defun von-koch-construction (blank-tree &optional verbose)
   "Given an unenumerated tree of N nodes, returns a tree of N nodes and N-1
 edges, with nodes enumerated 1 to N and edges 1 to N-1, such that each edge's
 enumeration is equal to the difference between the nodes."
@@ -14,8 +14,8 @@ enumeration is equal to the difference between the nodes."
       (let (new-states)
         (dolist (state states)
           (setf new-states (nconc (next-von-koch-states state) new-states)))
-        (format t "~&Round ~d: ~d states became ~d states.~%"
-                (incf round) (length states) (length new-states))
+        (when verbose (format t "~&Round ~d: ~d states became ~d states.~%"
+                (incf round) (length states) (length new-states)))
         (setf states new-states)))
     (caar states)))
 
@@ -35,10 +35,20 @@ enumeration is equal to the difference between the nodes."
 
 (defun von-koch-state-valid-p (von-koch-state)
   "Returns true if TREE does not have duplicate edge values."
-  ;; stub. this is supposed to cull bad candidates (efficiency) and check final
-  ;; solution (correctness)
-  (let ((tree (first von-koch-state)))
-    t))
+  (let* ((tree (first von-koch-state))
+         (n (num-nodes tree))
+         (edge-values-remaining (loop for i from 1 to (1- n) collect i)))
+    (labels ((inspect-edges (node)
+               (dolist (child (cadr node))
+                 (when (and (integerp (car node)) (integerp (car child)))
+                   (let ((edge-value (abs (- (car node) (car child)))))
+                     (if (member edge-value edge-values-remaining)
+                         (setf edge-values-remaining
+                               (remove edge-value edge-values-remaining))
+                         (return-from von-koch-state-valid-p nil))))
+                 (inspect-edges child))))
+      (inspect-edges tree)
+      t)))
 
 (defun num-nodes (root-node)
   "Determine the number of nodes in a tree (or subtree)."
