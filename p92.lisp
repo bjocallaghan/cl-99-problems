@@ -1,6 +1,7 @@
 (defparameter *partial-tree* '(x ((4 ((9 nil) (x nil))) (6 nil) (x nil))))
 (defparameter *simple-tree* '(x ((x nil) (x nil))))
 (defparameter *blank-tree* '(x ((x ((x nil) (x nil))) (x nil) (x nil))))
+(defparameter *filled-tree* '(3 ((1 nil) (2 nil))))
 
 (defun von-koch-construction (blank-tree)
   "Given an unenumerated tree of N nodes, returns a tree of N nodes and N-1
@@ -11,11 +12,9 @@ enumeration is equal to the difference between the nodes."
           (edges-left (loop for i from 1 to (1- n) collect i)))
     )))
 
-;; (defun num-descendents (node)
-;;   "Determine the number of descendent nodes of a node (or tree)."
-;;   (apply #'+ (cons (length (cdr node))
-;;                    (mapcar #'num-descendents
-;;                            (remove-if #'atom (cdr node))))))
+(defun num-nodes (root-node)
+  "Determine the number of nodes in a tree (or subtree)."
+  (1+ (reduce #'+ (mapcar #'num-nodes (cadr root-node)))))
 
 (defun nested-list-copy (structure)
   "Creates deep[er] copy of a nested list. End result, no shared cons cells
@@ -25,7 +24,16 @@ between the original structure and the copy."
         (cons (car structure)
               (nested-list-copy (cdr structure)))
         (cons (nested-list-copy (car structure))
-              (nested-list-copy (cdr structure))))))
+              (nested-list-copy (cdr structure)))))
+
+(defun find-node (node key-fn)
+  "Find the first node in a tree (or subtree) that KEY-FN returns non-nil."
+  (if (funcall key-fn node)
+      node
+      (do* ((children (cadr node) (cdr children))
+            (child-result (find-node (car children) key-fn)
+                          (find-node (car children) key-fn)))
+           (child-result child-result))))
 
 (defun normalize-tree-shape (tree)
   ;; i don't actually think i need to worry about this one just yet
@@ -57,7 +65,7 @@ between the original structure and the copy."
     (format t "~&graph{~%")
     (node->dot root-node)
     (format t "~&}~%")))
-  
 
-(defun next-von-koch-possibility (tree)
-  )
+(defun next-von-koch-possibility (tree nodes-left edges-left)
+  (let (possibilities)
+    (let ((blank (find-node tree #'(lambda (x) (eq (car x) 'x)))))
