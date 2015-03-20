@@ -30,10 +30,9 @@ between the original structure and the copy."
   "Find the first node in a tree (or subtree) that KEY-FN returns non-nil."
   (if (funcall key-fn node)
       node
-      (do* ((children (cadr node) (cdr children))
-            (child-result (find-node (car children) key-fn)
-                          (find-node (car children) key-fn)))
-           (child-result child-result))))
+      (dolist (child (cadr node))
+        (let ((child-result (find-node child key-fn)))
+          (when child-result (return child-result))))))
 
 (defun normalize-tree-shape (tree)
   ;; i don't actually think i need to worry about this one just yet
@@ -66,6 +65,16 @@ between the original structure and the copy."
     (node->dot root-node)
     (format t "~&}~%")))
 
-(defun next-von-koch-possibility (tree nodes-left edges-left)
-  (let (possibilities)
-    (let ((blank (find-node tree #'(lambda (x) (eq (car x) 'x)))))
+(defun von-koch-tree-edges-valid-p (tree)
+  "Returns true if TREE does not have duplicate edge values."
+  ;; stub
+  t)
+
+(defun next-von-koch-possibilities (tree nodes-left)
+  (labels ((assign (value)
+             (let* ((copy (nested-list-copy tree))
+                    (blank-node (find-node copy (lambda (x) (eq (car x) 'x)))))
+               (setf (car blank-node) value)
+               copy)))
+    (remove-if-not #'von-koch-tree-edges-valid-p
+                   (mapcar #'(lambda (x) (assign x)) nodes-left)))))
