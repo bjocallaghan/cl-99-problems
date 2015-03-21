@@ -4,8 +4,9 @@
 (defparameter *filled-tree* '(3 ((1 nil) (2 nil))))
 (defparameter *bigger-tree* '(x ((x ((x ((x ((x ((x nil) (x nil))) (x nil) (x nil))))) (x nil))) (x nil) (x nil))))
 (defparameter *giant-tree* '(x ((x ((x ((x ((x ((x nil) (x nil))) (x nil) (x nil))))) (x nil))) (x ((x ((x ((x nil) (x nil))) (x ((x ((x ((x nil) (x nil))) (x nil) (x nil))))) (x nil))))) (x nil))))
+(defparameter *eight-tree* '(x ((x ((x ((x nil) (x nil))) (x nil))) (x nil) (x nil))))
 
-(defun von-koch-construction (blank-tree &optional verbose)
+(defun graceful-solution (blank-tree &optional verbose)
   "Given an unenumerated tree of N nodes, returns a tree of N nodes and N-1
 edges, with nodes enumerated 1 to N and edges 1 to N-1, such that each edge's
 enumeration is equal to the difference between the nodes."
@@ -15,13 +16,13 @@ enumeration is equal to the difference between the nodes."
     (dotimes (i n)
       (let (new-states)
         (dolist (state states)
-          (setf new-states (nconc (next-von-koch-states state) new-states)))
+          (setf new-states (nconc (next-graceful-states state) new-states)))
         (when verbose (format t "~&Round ~d: ~d states became ~d states.~%"
                 (incf round) (length states) (length new-states)))
         (setf states new-states)))
     (caar states)))
 
-(defun next-von-koch-states (state)
+(defun next-graceful-states (state)
   (let ((tree (first state))
         (values-left (second state)))
     (labels ((assign (value)
@@ -30,14 +31,15 @@ enumeration is equal to the difference between the nodes."
                                                     (eq (car x) 'x)))))
                  (setf (car blank-node) value)
                  copy)))
-      (remove-if-not #'von-koch-state-valid-p
+      (remove-if-not #'graceful-state-valid-p
                      (mapcar #'(lambda (x) (list (assign x)
                                                  (remove x values-left)))
                              values-left)))))
 
-(defun von-koch-state-valid-p (von-koch-state)
-  "Returns true if TREE does not have duplicate edge values."
-  (let* ((tree (first von-koch-state))
+(defun graceful-state-valid-p (graceful-state)
+  "Returns true if TREE does not have duplicate edge values. Mostly useful for
+evaluating partially filled trees to cull unsuitable paths."
+  (let* ((tree (first graceful-state))
          (n (num-nodes tree))
          (edge-values-remaining (loop for i from 1 to (1- n) collect i)))
     (labels ((inspect-edges (node)
@@ -47,7 +49,7 @@ enumeration is equal to the difference between the nodes."
                      (if (member edge-value edge-values-remaining)
                          (setf edge-values-remaining
                                (remove edge-value edge-values-remaining))
-                         (return-from von-koch-state-valid-p nil))))
+                         (return-from graceful-state-valid-p nil))))
                  (inspect-edges child))))
       (inspect-edges tree)
       t)))
@@ -76,6 +78,7 @@ between the original structure and the copy."
 
 (defun normalize-tree-shape (tree)
   ;; i don't actually think i need to worry about this one just yet
+  ;; 2015-03-20: yes, it's time to worry
   (error "not implemented"))
 
 (defparameter *anon-counter* 0)
